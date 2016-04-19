@@ -12,7 +12,10 @@
     BUTTON_CHROME: 'Go to Chrome Web Store',
     CHROME_EXTENSION_ID: 'ljckddiekopnnjoeaiofddfhgnbdoafc',
     FIREFOX_EXTENSION_URL: 'https://addons.mozilla.org/en-US/firefox/addon/skylink-webrtc-tools/',
-    DETECTRTC_URL: 'https://cdn.temasys.com.sg/skylink/extensions/detectRTC.html'
+    OPERA_EXTENSION_ID: 'ljckddiekopnnjoeaiofddfhgnbdoafc-2',
+    OPERA_EXTENSION_URL: 'https://opera.com/',
+    DETECTRTC_URL: 'https://temasys-cdn.s3.amazonaws.com/skylink/extensions/detection-script-dev/detectRTC.html'
+      //'https://cdn.temasys.com.sg/skylink/extensions/detectRTC.html'
   };
 
   var clone = function(obj) {
@@ -82,14 +85,16 @@
 
     navigator.getUserMedia = function (constraints, successCb, failureCb) {
       if (constraints && constraints.video && !!constraints.video.mediaSource) {
-        if (window.webrtcDetectedBrowser !== 'chrome') {
-          // This is Opera, which does not support screensharing
-          failureCb(new Error('Current browser does not support screensharing'));
-          return;
-        }
-
         // would be fine since no methods
-        var updatedConstraints = clone(constraints);
+        var updatedConstraints = clone(constraints),
+            extensionId = AdapterJS.TEXT.EXTENSION.CHROME_EXTENSION_ID,
+            extensionUrl = 'https://chrome.google.com/webstore/detail/skylink-webrtc-tools/' +
+              AdapterJS.TEXT.EXTENSION.CHROME_EXTENSION_ID;
+
+        if (window.webrtcDetectedBrowser === 'opera') {
+          extensionId = AdapterJS.TEXT.EXTENSION.OPERA_EXTENSION_ID;
+          extensionUrl = AdapterJS.TEXT.EXTENSION.OPERA_EXTENSION_URL;
+        }
 
         var chromeCallback = function(error, sourceId) {
           if(!error) {
@@ -134,8 +139,7 @@
             if (event.data.chromeExtensionStatus === 'not-installed') {
               AdapterJS.renderNotificationBar(AdapterJS.TEXT.EXTENSION.REQUIRE_INSTALLATION_CHROME,
                 AdapterJS.TEXT.EXTENSION.BUTTON_CHROME,
-                'https://chrome.google.com/webstore/detail/skylink-webrtc-tools/' +
-                AdapterJS.TEXT.EXTENSION.CHROME_EXTENSION_ID, true, true);
+                extensionUrl, true, true);
             } else {
               chromeCallback(event.data.chromeExtensionStatus, null);
             }
@@ -149,7 +153,7 @@
 
         postFrameMessage({
           captureSourceId: true,
-          extensionId: AdapterJS.TEXT.EXTENSION.CHROME_EXTENSION_ID
+          extensionId: extensionId
         });
 
       } else {
@@ -167,7 +171,9 @@
     // For chrome, use an iframe to load the screensharing extension
     // in the correct domain.
     // Modify here for custom screensharing extension in chrome
-    if (window.webrtcDetectedBrowser === 'chrome') {
+    // Opera 23 uses Chrome 35 which supports screensharing
+    if ((window.webrtcDetectedBrowser === 'chrome' && window.webrtcDetectedVersion >= 34) ||
+      (window.webrtcDetectedBrowser === 'opera' && window.webrtcDetectedVersion >= 23)) {
       var iframe = document.createElement('iframe');
 
       iframe.onload = function() {
@@ -191,8 +197,8 @@
 
         iframe.contentWindow.postMessage(object, '*');
       };
-    } else if (window.webrtcDetectedBrowser === 'opera') {
-      console.warn('Opera does not support screensharing feature in getUserMedia');
+    } else {
+      console.warn('Your current browser does not support screensharing feature in getUserMedia');
     }
 
   } else if (navigator.mediaDevices && navigator.userAgent.match(/Edge\/(\d+).(\d+)$/)) {
