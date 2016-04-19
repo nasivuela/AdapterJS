@@ -134,7 +134,8 @@
             if (event.data.chromeExtensionStatus === 'not-installed') {
               AdapterJS.renderNotificationBar(AdapterJS.TEXT.EXTENSION.REQUIRE_INSTALLATION_CHROME,
                 AdapterJS.TEXT.EXTENSION.BUTTON_CHROME,
-                event.data.data, true, true);
+                'https://chrome.google.com/webstore/detail/skylink-webrtc-tools/' +
+                AdapterJS.TEXT.EXTENSION.CHROME_EXTENSION_ID, true, true);
             } else {
               chromeCallback(event.data.chromeExtensionStatus, null);
             }
