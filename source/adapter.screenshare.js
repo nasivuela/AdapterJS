@@ -11,7 +11,8 @@
     BUTTON_FF: 'Install Now',
     BUTTON_CHROME: 'Go to Chrome Web Store',
     CHROME_EXTENSION_ID: 'ljckddiekopnnjoeaiofddfhgnbdoafc',
-    FIREFOX_EXTENSION_URL: 'https://addons.mozilla.org/en-US/firefox/addon/skylink-webrtc-tools/'
+    FIREFOX_EXTENSION_URL: 'https://addons.mozilla.org/en-US/firefox/addon/skylink-webrtc-tools/',
+    DETECTRTC_URL: 'https://cdn.temasys.com.sg/skylink/extensions/detectRTC.html'
   };
 
   var clone = function(obj) {
@@ -215,7 +216,7 @@
       iframe.isLoaded = true;
     };
 
-    iframe.src = 'https://cdn.temasys.com.sg/skylink/extensions/detectRTC.html';
+    iframe.src = AdapterJS.TEXT.EXTENSION.DETECTRTC_URL;
     iframe.style.display = 'none';
 
     (document.body || document.documentElement).appendChild(iframe);
