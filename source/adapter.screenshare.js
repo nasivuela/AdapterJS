@@ -11,6 +11,7 @@
     BUTTON_FF: 'Install Now',
     BUTTON_CHROME: 'Go to Chrome Web Store',
     CHROME_EXTENSION_ID: 'ljckddiekopnnjoeaiofddfhgnbdoafc',
+    CHROME_EXTENSION_URL: 'https://chrome.google.com/webstore/detail/skylink-webrtc-tools/ljckddiekopnnjoeaiofddfhgnbdoafc',
     FIREFOX_EXTENSION_URL: 'https://addons.mozilla.org/en-US/firefox/addon/skylink-webrtc-tools/',
     OPERA_EXTENSION_ID: 'ljckddiekopnnjoeaiofddfhgnbdoafc-2',
     OPERA_EXTENSION_URL: 'https://opera.com/',
@@ -88,8 +89,7 @@
         // would be fine since no methods
         var updatedConstraints = clone(constraints),
             extensionId = AdapterJS.TEXT.EXTENSION.CHROME_EXTENSION_ID,
-            extensionUrl = 'https://chrome.google.com/webstore/detail/skylink-webrtc-tools/' +
-              AdapterJS.TEXT.EXTENSION.CHROME_EXTENSION_ID;
+            extensionUrl = AdapterJS.TEXT.EXTENSION.CHROME_EXTENSION_URL;
 
         if (window.webrtcDetectedBrowser === 'opera') {
           extensionId = AdapterJS.TEXT.EXTENSION.OPERA_EXTENSION_ID;
