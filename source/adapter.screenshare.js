@@ -9,7 +9,8 @@
     REQUIRE_INSTALLATION_CHROME: 'To enable screensharing you need to install the Skylink WebRTC tools Chrome Extension.',
     REQUIRE_REFRESH: 'Please refresh this page after the Skylink WebRTC tools extension has been installed.',
     BUTTON_FF: 'Install Now',
-    BUTTON_CHROME: 'Go to Chrome Web Store'
+    BUTTON_CHROME: 'Go to Chrome Web Store',
+    CHROME_EXTENSION_ID: 'ljckddiekopnnjoeaiofddfhgnbdoafc'
   };
 
   var clone = function(obj) {
@@ -144,7 +145,8 @@
         window.addEventListener('message', onIFrameCallback);
 
         postFrameMessage({
-          captureSourceId: true
+          captureSourceId: true,
+          extensionId: AdapterJS.TEXT.EXTENSION.CHROME_EXTENSION_ID
         });
 
       } else {
