@@ -9,7 +9,8 @@
     REQUIRE_INSTALLATION_CHROME: 'To enable screensharing you need to install the Skylink WebRTC tools Chrome Extension.',
     REQUIRE_REFRESH: 'Please refresh this page after the Skylink WebRTC tools extension has been installed.',
     BUTTON_FF: 'Install Now',
-    BUTTON_CHROME: 'Go to Chrome Web Store'
+    BUTTON_CHROME: 'Go to Chrome Web Store',
+    CHROME_EXTENSION_ID: 'ncpocaejmldniphcnieejjaadcfhebii'//'ljckddiekopnnjoeaiofddfhgnbdoafc'
   };
 
   var clone = function(obj) {
@@ -85,67 +86,93 @@
           return;
         }
 
-        // would be fine since no methods
-        var updatedConstraints = clone(constraints);
+        // Check if extension is installed first
+        var image = document.createElement('img');
 
-        var chromeCallback = function(error, sourceId) {
-          if(!error) {
-            updatedConstraints.video.mandatory = updatedConstraints.video.mandatory || {};
-            updatedConstraints.video.mandatory.chromeMediaSource = 'desktop';
-            updatedConstraints.video.mandatory.maxWidth = window.screen.width > 1920 ? window.screen.width : 1920;
-            updatedConstraints.video.mandatory.maxHeight = window.screen.height > 1080 ? window.screen.height : 1080;
+        image.src = 'chrome-extension://' + AdapterJS.TEXT.EXTENSION.CHROME_EXTENSION_ID + '/icon.png';
 
-            if (sourceId) {
-              updatedConstraints.video.mandatory.chromeMediaSourceId = sourceId;
+        image.onload = function () {
+          var extensionVersion = null,
+              terminated = false;
+
+          var checkEnabledTimeout = setTimeout(function () {
+            if (!extensionVersion) {
+              terminated = true;
+              failureCb(new Error('Failed retrieving selected screen as connection to extension is not active'));
             }
+          }, 2500);
 
-            delete updatedConstraints.video.mediaSource;
+          chrome.runtime.sendMessage(AdapterJS.TEXT.EXTENSION.CHROME_EXTENSION_ID, {
+            action: 'get-version'
+          }, function (versionResult) {
+            console.info('result1', versionResult);
+            extensionVersion = versionResult ? versionResult.version : null;
 
-            baseGetUserMedia(updatedConstraints, successCb, failureCb);
+            if (!terminated && extensionVersion) {
+              clearTimeout(checkEnabledTimeout);
 
-          } else { // GUM failed
-            if (error === 'permission-denied') {
-              failureCb(new Error('Permission denied for screen retrieval'));
-            } else {
-              // NOTE(J-O): I don't think we ever pass in here. 
-              // A failure to capture the screen does not lead here.
-              failureCb(new Error('Failed retrieving selected screen'));
+              // Obtain chromeMediaSourceId
+              chrome.runtime.sendMessage(AdapterJS.TEXT.EXTENSION.CHROME_EXTENSION_ID, {
+                action: 'get-source',
+                requireAudio: !!constraints.audio,
+                browserName: window.webrtcDetectedBrowser,
+                browserVersion: window.webrtcDetectedVersion
+
+              }, function (sourceResult) {
+                console.info('result', sourceResult);
+
+                if (!(sourceResult && !!sourceResult.sourceId)) {
+                  failureCb(new Error('Permission denied for screen retrieval'));
+                  return;
+                }
+
+                if (!!constraints.audio && !hasAudioSupport) {
+                  log.warn('Audio is disabled for selected screen as current browser version does not support it');
+                }
+
+                var updatedConstraints = {
+                  video: {
+                    mandatory: {
+                      chromeMediaSource: 'desktop',
+                      chromeMediaSourceId: sourceResult.sourceId,
+                      minFrameRate: 30,
+                      maxFrameRate: 64,
+                      maxWidth: 1920,
+                      maxHeight: 1080,
+                      minAspectRatio: 1.77
+                    },
+                    optional: [{
+                      bandwidth: 1920 * 8 * 1024
+                    }]
+                  },
+                  audio: false
+                };
+
+                // Check if audio is supported first
+                if (sourceResult.hasAudioSupport) {
+                  updatedConstraints.audio = {
+                    mandatory: {
+                      chromeMediaSource: 'desktop',
+                      chromeMediaSourceId: sourceResult.sourceId,
+                    },
+                    optional: [{
+                      bandwidth: updatedConstraints.video.mandatory.maxWidth * 8 * 1024
+                    }]
+                  };
+                }
+
+                baseGetUserMedia(updatedConstraints, successCb, failureCb);
+              });
             }
-          }
+          });
         };
 
-        var onIFrameCallback = function (event) {
-          if (!event.data) {
-            return;
-          }
-
-          if (event.data.chromeMediaSourceId) {
-            if (event.data.chromeMediaSourceId === 'PermissionDeniedError') {
-                chromeCallback('permission-denied');
-            } else {
-              chromeCallback(null, event.data.chromeMediaSourceId);
-            }
-          }
-
-          if (event.data.chromeExtensionStatus) {
-            if (event.data.chromeExtensionStatus === 'not-installed') {
-              AdapterJS.renderNotificationBar(AdapterJS.TEXT.EXTENSION.REQUIRE_INSTALLATION_CHROME,
-                AdapterJS.TEXT.EXTENSION.BUTTON_CHROME,
-                event.data.data, true, true);
-            } else {
-              chromeCallback(event.data.chromeExtensionStatus, null);
-            }
-          }
-
-          // this event listener is no more needed
-          window.removeEventListener('message', onIFrameCallback);
+        image.onerror = function () {
+          AdapterJS.renderNotificationBar(AdapterJS.TEXT.EXTENSION.REQUIRE_INSTALLATION_CHROME,
+            AdapterJS.TEXT.EXTENSION.BUTTON_CHROME,
+            'https://chrome.google.com/webstore/detail/skylink-webrtc-tools/' +
+            AdapterJS.TEXT.EXTENSION.CHROME_EXTENSION_ID, true, true);
         };
-
-        window.addEventListener('message', onIFrameCallback);
-
-        postFrameMessage({
-          captureSourceId: true
-        });
 
       } else {
         baseGetUserMedia(constraints, successCb, failureCb);
@@ -194,42 +221,11 @@
       }
     };
 
-    AdapterJS.getUserMedia = getUserMedia = 
+    AdapterJS.getUserMedia = getUserMedia =
        window.getUserMedia = navigator.getUserMedia;
     if ( navigator.mediaDevices &&
       typeof Promise !== 'undefined') {
       navigator.mediaDevices.getUserMedia = requestUserMedia;
     }
-  }
-
-  // For chrome, use an iframe to load the screensharing extension
-  // in the correct domain.
-  // Modify here for custom screensharing extension in chrome
-  if (window.webrtcDetectedBrowser === 'chrome') {
-    var iframe = document.createElement('iframe');
-
-    iframe.onload = function() {
-      iframe.isLoaded = true;
-    };
-
-    iframe.src = 'https://cdn.temasys.com.sg/skylink/extensions/detectRTC.html';
-    iframe.style.display = 'none';
-
-    (document.body || document.documentElement).appendChild(iframe);
-
-    var postFrameMessage = function (object) { // jshint ignore:line
-      object = object || {};
-
-      if (!iframe.isLoaded) {
-        setTimeout(function () {
-          iframe.contentWindow.postMessage(object, '*');
-        }, 100);
-        return;
-      }
-
-      iframe.contentWindow.postMessage(object, '*');
-    };
-  } else if (window.webrtcDetectedBrowser === 'opera') {
-    console.warn('Opera does not support screensharing feature in getUserMedia');
   }
 })();
