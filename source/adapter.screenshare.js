@@ -9,7 +9,7 @@
     REQUIRE_INSTALLATION_CHROME: 'To enable screensharing you need to install the Skylink WebRTC tools Chrome Extension.',
     REQUIRE_INSTALLATION_OPERA: 'To enable screensharing you need to install the Skylink WebRTC tools Opera Extension.',
     REQUIRE_REFRESH: 'Please refresh this page after the Skylink WebRTC tools extension has been installed.',
-    BUTTON_FF: 'Install Now',
+    BUTTON_FF: 'Go to Firefox Addons Directory',
     BUTTON_CHROME: 'Go to Chrome Web Store',
     BUTTON_OPERA: 'Go to Opera Addons Directory',
     CHROME_EXTENSION_ID: 'ljckddiekopnnjoeaiofddfhgnbdoafc',
