@@ -164,6 +164,37 @@
       });
     };
 
+    // For chrome, use an iframe to load the screensharing extension
+    // in the correct domain.
+    // Modify here for custom screensharing extension in chrome
+    if (window.webrtcDetectedBrowser === 'chrome') {
+      var iframe = document.createElement('iframe');
+
+      iframe.onload = function() {
+        iframe.isLoaded = true;
+      };
+
+      iframe.src = AdapterJS.TEXT.EXTENSION.DETECTRTC_URL;
+      iframe.style.display = 'none';
+
+      (document.body || document.documentElement).appendChild(iframe);
+
+      var postFrameMessage = function (object) { // jshint ignore:line
+        object = object || {};
+
+        if (!iframe.isLoaded) {
+          setTimeout(function () {
+            iframe.contentWindow.postMessage(object, '*');
+          }, 100);
+          return;
+        }
+
+        iframe.contentWindow.postMessage(object, '*');
+      };
+    } else if (window.webrtcDetectedBrowser === 'opera') {
+      console.warn('Opera does not support screensharing feature in getUserMedia');
+    }
+
   } else if (navigator.mediaDevices && navigator.userAgent.match(/Edge\/(\d+).(\d+)$/)) {
     // nothing here because edge does not support screensharing
     console.warn('Edge does not support screensharing feature in getUserMedia');
@@ -205,36 +236,5 @@
       typeof Promise !== 'undefined') {
       navigator.mediaDevices.getUserMedia = requestUserMedia;
     }
-  }
-
-  // For chrome, use an iframe to load the screensharing extension
-  // in the correct domain.
-  // Modify here for custom screensharing extension in chrome
-  if (window.webrtcDetectedBrowser === 'chrome') {
-    var iframe = document.createElement('iframe');
-
-    iframe.onload = function() {
-      iframe.isLoaded = true;
-    };
-
-    iframe.src = AdapterJS.TEXT.EXTENSION.DETECTRTC_URL;
-    iframe.style.display = 'none';
-
-    (document.body || document.documentElement).appendChild(iframe);
-
-    var postFrameMessage = function (object) { // jshint ignore:line
-      object = object || {};
-
-      if (!iframe.isLoaded) {
-        setTimeout(function () {
-          iframe.contentWindow.postMessage(object, '*');
-        }, 100);
-        return;
-      }
-
-      iframe.contentWindow.postMessage(object, '*');
-    };
-  } else if (window.webrtcDetectedBrowser === 'opera') {
-    console.warn('Opera does not support screensharing feature in getUserMedia');
   }
 })();
