@@ -84,6 +84,8 @@
     };
 
   } else if (window.navigator.webkitGetUserMedia) {
+    var postFrameMessage = function () {}; // dummy
+
     // For chrome, use an iframe to load the screensharing extension
     // in the correct domain.
     // Modify here for custom screensharing extension in chrome
@@ -101,7 +103,7 @@
 
       (document.body || document.documentElement).appendChild(iframe);
 
-      var postFrameMessage = function (object) { // jshint ignore:line
+      postFrameMessage = function (object) { // jshint ignore:line
         object = object || {};
 
         if (!iframe.isLoaded) {
