@@ -10,7 +10,8 @@
     REQUIRE_REFRESH: 'Please refresh this page after the Skylink WebRTC tools extension has been installed.',
     BUTTON_FF: 'Install Now',
     BUTTON_CHROME: 'Go to Chrome Web Store',
-    CHROME_EXTENSION_ID: 'ljckddiekopnnjoeaiofddfhgnbdoafc'
+    CHROME_EXTENSION_ID: 'ljckddiekopnnjoeaiofddfhgnbdoafc',
+    FIREFOX_EXTENSION_URL: 'https://addons.mozilla.org/en-US/firefox/addon/skylink-webrtc-tools/'
   };
 
   var clone = function(obj) {
@@ -55,7 +56,7 @@
               if (['PermissionDeniedError', 'SecurityError'].indexOf(error.name) > -1 && window.parent.location.protocol === 'https:') {
                 AdapterJS.renderNotificationBar(AdapterJS.TEXT.EXTENSION.REQUIRE_INSTALLATION_FF,
                   AdapterJS.TEXT.EXTENSION.BUTTON_FF,
-                  'https://addons.mozilla.org/en-US/firefox/addon/skylink-webrtc-tools/', true, true);
+                  AdapterJS.TEXT.EXTENSION.FIREFOX_EXTENSION_URL, true, true);
               } else {
                 failureCb(error);
               }
