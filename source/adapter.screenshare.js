@@ -7,9 +7,11 @@
   AdapterJS.TEXT.EXTENSION = {
     REQUIRE_INSTALLATION_FF: 'To enable screensharing you need to install the Skylink WebRTC tools Firefox Add-on.',
     REQUIRE_INSTALLATION_CHROME: 'To enable screensharing you need to install the Skylink WebRTC tools Chrome Extension.',
+    REQUIRE_INSTALLATION_OPERA: 'To enable screensharing you need to install the Skylink WebRTC tools Opera Extension.',
     REQUIRE_REFRESH: 'Please refresh this page after the Skylink WebRTC tools extension has been installed.',
     BUTTON_FF: 'Install Now',
     BUTTON_CHROME: 'Go to Chrome Web Store',
+    BUTTON_OPERA: 'Go to Opera Addons Directory',
     CHROME_EXTENSION_ID: 'ljckddiekopnnjoeaiofddfhgnbdoafc',
     CHROME_EXTENSION_URL: 'https://chrome.google.com/webstore/detail/skylink-webrtc-tools/ljckddiekopnnjoeaiofddfhgnbdoafc',
     FIREFOX_EXTENSION_URL: 'https://addons.mozilla.org/en-US/firefox/addon/skylink-webrtc-tools/',
@@ -89,11 +91,15 @@
         // would be fine since no methods
         var updatedConstraints = clone(constraints),
             extensionId = AdapterJS.TEXT.EXTENSION.CHROME_EXTENSION_ID,
-            extensionUrl = AdapterJS.TEXT.EXTENSION.CHROME_EXTENSION_URL;
+            extensionUrl = AdapterJS.TEXT.EXTENSION.CHROME_EXTENSION_URL,
+            extensionInstallText = AdapterJS.TEXT.EXTENSION.REQUIRE_INSTALLATION_CHROME,
+            extensionInstallButtonText = AdapterJS.TEXT.EXTENSION.BUTTON_CHROME;
 
         if (window.webrtcDetectedBrowser === 'opera') {
           extensionId = AdapterJS.TEXT.EXTENSION.OPERA_EXTENSION_ID;
           extensionUrl = AdapterJS.TEXT.EXTENSION.OPERA_EXTENSION_URL;
+          extensionInstallText = AdapterJS.TEXT.EXTENSION.REQUIRE_INSTALLATION_OPERA;
+          extensionInstallButtonText = AdapterJS.TEXT.EXTENSION.BUTTON_OPERA;
         }
 
         var chromeCallback = function(error, sourceId) {
@@ -137,8 +143,7 @@
 
           if (event.data.chromeExtensionStatus) {
             if (event.data.chromeExtensionStatus === 'not-installed') {
-              AdapterJS.renderNotificationBar(AdapterJS.TEXT.EXTENSION.REQUIRE_INSTALLATION_CHROME,
-                AdapterJS.TEXT.EXTENSION.BUTTON_CHROME,
+              AdapterJS.renderNotificationBar(extensionInstallText, extensionInstallButtonText,
                 extensionUrl, true, true);
             } else {
               chromeCallback(event.data.chromeExtensionStatus, null);
