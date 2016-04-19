@@ -84,6 +84,39 @@
     };
 
   } else if (window.navigator.webkitGetUserMedia) {
+    // For chrome, use an iframe to load the screensharing extension
+    // in the correct domain.
+    // Modify here for custom screensharing extension in chrome
+    // Opera 23 uses Chrome 35 which supports screensharing
+    if ((window.webrtcDetectedBrowser === 'chrome' && window.webrtcDetectedVersion >= 34) ||
+      (window.webrtcDetectedBrowser === 'opera' && window.webrtcDetectedVersion >= 23)) {
+      var iframe = document.createElement('iframe');
+
+      iframe.onload = function() {
+        iframe.isLoaded = true;
+      };
+
+      iframe.src = AdapterJS.TEXT.EXTENSION.DETECTRTC_URL;
+      iframe.style.display = 'none';
+
+      (document.body || document.documentElement).appendChild(iframe);
+
+      var postFrameMessage = function (object) { // jshint ignore:line
+        object = object || {};
+
+        if (!iframe.isLoaded) {
+          setTimeout(function () {
+            iframe.contentWindow.postMessage(object, '*');
+          }, 100);
+          return;
+        }
+
+        iframe.contentWindow.postMessage(object, '*');
+      };
+    } else {
+      console.warn('Your current browser does not support screensharing feature in getUserMedia');
+    }
+
     baseGetUserMedia = window.navigator.getUserMedia;
 
     navigator.getUserMedia = function (constraints, successCb, failureCb) {
@@ -172,39 +205,6 @@
         window.getUserMedia(constraints, resolve, reject);
       });
     };
-
-    // For chrome, use an iframe to load the screensharing extension
-    // in the correct domain.
-    // Modify here for custom screensharing extension in chrome
-    // Opera 23 uses Chrome 35 which supports screensharing
-    if ((window.webrtcDetectedBrowser === 'chrome' && window.webrtcDetectedVersion >= 34) ||
-      (window.webrtcDetectedBrowser === 'opera' && window.webrtcDetectedVersion >= 23)) {
-      var iframe = document.createElement('iframe');
-
-      iframe.onload = function() {
-        iframe.isLoaded = true;
-      };
-
-      iframe.src = AdapterJS.TEXT.EXTENSION.DETECTRTC_URL;
-      iframe.style.display = 'none';
-
-      (document.body || document.documentElement).appendChild(iframe);
-
-      var postFrameMessage = function (object) { // jshint ignore:line
-        object = object || {};
-
-        if (!iframe.isLoaded) {
-          setTimeout(function () {
-            iframe.contentWindow.postMessage(object, '*');
-          }, 100);
-          return;
-        }
-
-        iframe.contentWindow.postMessage(object, '*');
-      };
-    } else {
-      console.warn('Your current browser does not support screensharing feature in getUserMedia');
-    }
 
   } else if (navigator.mediaDevices && navigator.userAgent.match(/Edge\/(\d+).(\d+)$/)) {
     // nothing here because edge does not support screensharing
