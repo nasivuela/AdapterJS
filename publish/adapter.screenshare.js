@@ -1,4 +1,4 @@
-/*! adapterjs - v0.13.3 - 2016-04-13 */
+/*! adapterjs - v0.13.3 - 2016-05-20 */
 
 // Adapter's interface.
 var AdapterJS = AdapterJS || {};
@@ -2743,7 +2743,7 @@ if ( navigator.mozGetUserMedia ||
       }
     };
 
-    MediaStreamTrack = {};
+    MediaStreamTrack = function(){};
     MediaStreamTrack.getSources = function (callback) {
       AdapterJS.WebRTCPlugin.callWhenPluginReady(function() {
         AdapterJS.WebRTCPlugin.plugin.GetSources(callback);
